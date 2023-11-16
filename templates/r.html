@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R Solution - Crop Recommendation</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Crop Prediction</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/metrics">Metrics</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/r">R Solution</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h1 class="mb-4">R Solution - Crop Recommendation</h1>
+        
+        <h2>Load Necessary Libraries</h2>
+        <pre><code># Load necessary libraries
+if (!requireNamespace("e1071", quietly = TRUE)) {
+  install.packages("e1071")
+}
+
+library(caret)
+library(dplyr)
+library(ROCR)
+library(naivebayes)
+library(e1071)
+library(corrplot)
+library(pROC)
+</code></pre>
+
+        <!-- Repeat similar sections for other code segments -->
+
+        <h2>Predict "User Input"</h2>
+        <pre><code># Predict "user input"
+
+# Train a Naive Bayes model on the entire dataset
+nb_model <- naiveBayes(label ~ ., data = data)
+
+# Function to get user input and make predictions
+predict_crop <- function(model, input_data, label_mapping) {
+  # Create a data frame with user input
+  user_data <- data.frame(input_data)
+  
+  # Make predictions using the trained model
+  predictions <- predict(model, newdata = user_data)
+  
+  # Map numerical predictions to actual crop names
+  predicted_crops <- label_mapping[predictions]
+  
+  # Display the predicted crop
+  cat("Predicted Crop:", predicted_crops, "\n")
+}
+
+# Example user input
+user_input <- list(
+  N = 57,
+  P = 60,
+  K = 84,
+  temperature = 19.1034,
+  humidity = 17.2618,
+  ph = 6.58677189,
+  rainfall = 75.49101167
+)
+
+# Make predictions based on user input
+predict_crop(nb_model, user_input, label_mapping)
+</code></pre>
+
+    </div>
+</body>
+</html>

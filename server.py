@@ -114,6 +114,10 @@ def metrics():
 
     return render_template('metrics.html', auc_values_filtered=auc_values_filtered, labels=labels, plot_base64=plot_base64)
 
+@app.route('/r')
+def r_solution():
+    return render_template('r.html')
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
     plot_in_main_thread(roc_curves, labels, auc_values_filtered)
