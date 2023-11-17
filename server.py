@@ -12,6 +12,10 @@ matplotlib.use('TkAgg')
 import multiprocessing
 from sklearn.manifold import TSNE
 import seaborn as sns
+from scipy.cluster.hierarchy import dendrogram, linkage
+from scipy.cluster import hierarchy
+import numpy as np
+from scipy.spatial.distance import pdist
 
 app = Flask(__name__)
 Bootstrap(app)
@@ -76,8 +80,33 @@ def calculate_metrics():
     tsne_plot_img.seek(0)
     tsne_plot_base64 = base64.b64encode(tsne_plot_img.getvalue()).decode()
 
+     # Perform hierarchical clustering based on features
+    dist_matrix = linkage(data[features].transpose(), method='ward', metric='euclidean')
+
+    # Plot the hierarchical clustering dendrogram
+    plt.figure(figsize=(12, 8))
+    dendrogram(dist_matrix, labels=data[features].columns, orientation='top')
+    plt.title('Hierarchical Clustering Dendrogram')
+    dendrogram_img = BytesIO()
+    plt.savefig(dendrogram_img, format='png')
+    dendrogram_img.seek(0)
+    dendrogram_base64 = base64.b64encode(dendrogram_img.getvalue()).decode()
+
+    # Generate hierarchical clustering dendrogram
+    distance_matrix = pdist(X)  # Pairwise distance between data points
+    linkage_matrix = hierarchy.linkage(distance_matrix, method='complete')  # Hierarchical clustering linkage
+    dendrogram_img = BytesIO()
+    plt.figure(figsize=(12, 6))
+    hierarchy.dendrogram(linkage_matrix, labels=data['label'].tolist(), orientation='top', color_threshold=np.inf)
+    plt.title('Hierarchical Clustering Dendrogram')
+    plt.xlabel('Crop Labels')
+    plt.ylabel('Distance')
+    plt.savefig(dendrogram_img, format='png')
+    dendrogram_img.seek(0)
+    Hdendrogram_base64 = base64.b64encode(dendrogram_img.getvalue()).decode()
+
     # Return all metrics and plots
-    return roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64
+    return roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64, dendrogram_base64, Hdendrogram_base64
 
 # Function to plot ROC curves
 def plot_roc_curves(roc_curves, labels, auc_values_filtered):
@@ -121,7 +150,7 @@ def predict():
 @app.route('/metrics')
 def metrics():
     # Call the calculate_metrics function
-    roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64 = calculate_metrics()
+    roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64, dendrogram_base64, Hdendrogram_base64 = calculate_metrics()
     labels = data['label'].unique()
      
     # Extracting the existing plt object from calculate_metrics
@@ -140,7 +169,9 @@ def metrics():
         labels=labels,
         plot_base64=plot_base64,
         correlation_plot_base64=correlation_plot_base64,
-        tsne_plot_base64=tsne_plot_base64
+        tsne_plot_base64=tsne_plot_base64,
+        dendrogram_base64=dendrogram_base64,
+        Hdendrogram_base64=Hdendrogram_base64
     )
 
 @app.route('/r')
