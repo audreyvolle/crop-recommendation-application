@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Metrics</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="#">Crop Prediction</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -30,6 +33,17 @@
         <h1 class="mb-4">Model Metrics</h1>
         <div class="row">
             <div class="col-md-6">
+                <h4>Feature Correlation Plot</h4>
+                <img src="data:image/png;base64,{{ correlation_plot_base64 }}" alt="Feature Correlation Plot"
+                    class="img-fluid">
+            </div>
+            <div class="col-md-6">
+                <h4>t-SNE Diagram</h4>
+                <img src="data:image/png;base64,{{ tsne_plot_base64 }}" alt="t-SNE Diagram" class="img-fluid">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
                 <h4>ROC Curves</h4>
                 <img src="data:image/png;base64,{{ plot_base64 }}" alt="ROC Curves" class="img-fluid">
             </div>
@@ -37,11 +51,12 @@
                 <h4>AUC Values</h4>
                 <ul>
                     {% for i in range(auc_values_filtered|length) %}
-                        <li>{{ labels[i] }}: {{ auc_values_filtered[i]|round(2) }}</li>
+                    <li>{{ labels[i] }}: {{ auc_values_filtered[i]|round(2) }}</li>
                     {% endfor %}
                 </ul>
             </div>
         </div>
     </div>
 </body>
+
 </html>

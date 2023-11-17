@@ -1,4 +1,4 @@
-# Crop Recommendation Application
+# Crop Recommendation
 
 The Crop Recommendation Application is a tool that helps users determine the most suitable crops to grow based on specific environmental conditions. By providing information such as Nitrogen (N), Phosphorus (P), Potassium (K), Temperature, Humidity, pH, and Rainfall for a particular area, the application predicts the optimal crops for cultivation.
 

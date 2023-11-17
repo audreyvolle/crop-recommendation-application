@@ -10,6 +10,8 @@ import base64
 import matplotlib
 matplotlib.use('TkAgg')
 import multiprocessing
+from sklearn.manifold import TSNE
+import seaborn as sns
 
 app = Flask(__name__)
 Bootstrap(app)
@@ -52,7 +54,30 @@ def calculate_metrics():
         roc_curves.append((fpr, tpr))
         auc_values_filtered.append(auc(fpr, tpr))
 
-    return roc_curves, auc_values_filtered
+    correlation_matrix = data[features].corr()
+    plt.figure(figsize=(8, 8))
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+    plt.title('Feature Correlation Plot')
+    plt.xlabel('Features')
+    plt.ylabel('Features')
+    correlation_plot_img = BytesIO()
+    plt.savefig(correlation_plot_img, format='png')
+    correlation_plot_img.seek(0)
+    correlation_plot_base64 = base64.b64encode(correlation_plot_img.getvalue()).decode()
+
+    # Generate t-SNE diagram
+    tsne = TSNE(n_components=2, random_state=42)
+    tsne_result = tsne.fit_transform(data[features])
+    plt.figure(figsize=(8, 8))
+    sns.scatterplot(x=tsne_result[:, 0], y=tsne_result[:, 1], hue=data['label'], palette='viridis')
+    plt.title('t-SNE Diagram')
+    tsne_plot_img = BytesIO()
+    plt.savefig(tsne_plot_img, format='png')
+    tsne_plot_img.seek(0)
+    tsne_plot_base64 = base64.b64encode(tsne_plot_img.getvalue()).decode()
+
+    # Return all metrics and plots
+    return roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64
 
 # Function to plot ROC curves
 def plot_roc_curves(roc_curves, labels, auc_values_filtered):
@@ -96,23 +121,27 @@ def predict():
 @app.route('/metrics')
 def metrics():
     # Call the calculate_metrics function
-    roc_curves, auc_values_filtered = calculate_metrics()
+    roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64 = calculate_metrics()
     labels = data['label'].unique()
-
-    # Check if auc_values_filtered is defined
-    print("auc_values_filtered:", auc_values_filtered)
-
+     
+    # Extracting the existing plt object from calculate_metrics
     plt = plot_roc_curves(roc_curves, labels, auc_values_filtered)
 
-    # Save plot to BytesIO object
     img = BytesIO()
     plt.savefig(img, format='png')
     img.seek(0)
 
-    # Encode plot to base64 for displaying in HTML
     plot_base64 = base64.b64encode(img.getvalue()).decode()
 
-    return render_template('metrics.html', auc_values_filtered=auc_values_filtered, labels=labels, plot_base64=plot_base64)
+    return render_template(
+        'metrics.html',
+        roc_curves=roc_curves,
+        auc_values_filtered=auc_values_filtered,
+        labels=labels,
+        plot_base64=plot_base64,
+        correlation_plot_base64=correlation_plot_base64,
+        tsne_plot_base64=tsne_plot_base64
+    )
 
 @app.route('/r')
 def r_solution():
