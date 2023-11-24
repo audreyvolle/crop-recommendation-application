@@ -19,3 +19,6 @@ Feel free to explore the application and discover optimal crop choices for your 
 
 ## Metrics
 Additionally, you can view metrics related to the model's performance by navigating to http://localhost:5001/metrics. The metrics include values such as Area Under the Curve (AUC), providing insights into the accuracy and effectiveness of the crop recommendation model. Exploring these metrics can offer a deeper understanding of how well the application is performing.
+
+## R Solution
+An explanation of how to get the same prediction output in R using Naive Bayes.

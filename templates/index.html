@@ -6,6 +6,62 @@
     <title>Crop Prediction</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="styles.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #ffffff;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .mt-4 {
+            margin-top: 20px;
+        }
+
+        .description {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #6c757d;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -28,38 +84,40 @@
         </div>
     </nav>
     <div class="container mt-5">
-        <h1 class="mb-4">Crop Prediction</h1>
+        <h1>Crop Prediction</h1>
+        <div class="description">
+            <p>Enter the environmental parameters below to predict the suitable crop for cultivation.</p>
+        </div>
         <form method="post" action="/predict">
             <div class="form-group">
                 <label for="N">N:</label>
                 <input type="text" class="form-control" id="N" name="N" required>
             </div>
             <div class="form-group">
-                <label for="N">P:</label>
+                <label for="P">P:</label>
                 <input type="text" class="form-control" id="P" name="P" required>
             </div>
             <div class="form-group">
-                <label for="N">K:</label>
+                <label for="K">K:</label>
                 <input type="text" class="form-control" id="K" name="K" required>
             </div>
             <div class="form-group">
-                <label for="N">Temperature (Celsius):</label>
+                <label for="temperature">Temperature (Celsius):</label>
                 <input type="text" class="form-control" id="temperature" name="temperature" required>
             </div>
             <div class="form-group">
-                <label for="N">Humidity:</label>
+                <label for="humidity">Humidity:</label>
                 <input type="text" class="form-control" id="humidity" name="humidity" required>
             </div>
             <div class="form-group">
-                <label for="N">pH:</label>
+                <label for="ph">pH:</label>
                 <input type="text" class="form-control" id="ph" name="ph" required>
             </div>
             <div class="form-group">
-                <label for="N">Rainfall:</label>
+                <label for="rainfall">Rainfall:</label>
                 <input type="text" class="form-control" id="rainfall" name="rainfall" required>
             </div>
-            <!-- Repeat similar form elements for other features -->
-            <button type="submit" class="btn btn-primary">Predict</button>
+            <button type="submit">Predict</button>
         </form>
         {% if prediction %}
             <h3 class="mt-4">Predicted Crop: {{ prediction }}</h3>
@@ -67,3 +125,4 @@
     </div>
 </body>
 </html>
+
