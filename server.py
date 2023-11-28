@@ -92,13 +92,22 @@ def calculate_metrics():
     dendrogram_img.seek(0)
     dendrogram_base64 = base64.b64encode(dendrogram_img.getvalue()).decode()
 
+
+    # Generate hierarchical clustering dendrogram for labels
+    samples_per_label = 5
+
+    # Create a DataFrame with a sample of data for each label
+    sampled_data = pd.concat([data[data['label'] == label].sample(samples_per_label, random_state=42) for label in data['label'].unique()])
+
     # Generate hierarchical clustering dendrogram
-    distance_matrix = pdist(X)  # Pairwise distance between data points
-    linkage_matrix = hierarchy.linkage(distance_matrix, method='complete')  # Hierarchical clustering linkage
+    distance_matrix_sampled = pdist(sampled_data[features])  # Pairwise distance between data points
+    linkage_matrix_sampled = hierarchy.linkage(distance_matrix_sampled, method='complete')  # Hierarchical clustering linkage
+
+    # Plot the hierarchical clustering dendrogram
     dendrogram_img = BytesIO()
     plt.figure(figsize=(12, 6))
-    hierarchy.dendrogram(linkage_matrix, labels=data['label'].tolist(), orientation='top', color_threshold=np.inf)
-    plt.title('Hierarchical Clustering Dendrogram')
+    hierarchy.dendrogram(linkage_matrix_sampled, labels=sampled_data['label'].tolist(), orientation='top', color_threshold=np.inf)
+    plt.title('Hierarchical Clustering Dendrogram (Sampled Data)')
     plt.xlabel('Crop Labels')
     plt.ylabel('Distance')
     plt.savefig(dendrogram_img, format='png')
