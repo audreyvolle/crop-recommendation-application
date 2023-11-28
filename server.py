@@ -95,14 +95,11 @@ def calculate_metrics():
 
     # Generate hierarchical clustering dendrogram for labels
     samples_per_label = 5
-
     # Create a DataFrame with a sample of data for each label
     sampled_data = pd.concat([data[data['label'] == label].sample(samples_per_label, random_state=42) for label in data['label'].unique()])
-
     # Generate hierarchical clustering dendrogram
     distance_matrix_sampled = pdist(sampled_data[features])  # Pairwise distance between data points
     linkage_matrix_sampled = hierarchy.linkage(distance_matrix_sampled, method='complete')  # Hierarchical clustering linkage
-
     # Plot the hierarchical clustering dendrogram
     dendrogram_img = BytesIO()
     plt.figure(figsize=(12, 6))
@@ -114,8 +111,22 @@ def calculate_metrics():
     dendrogram_img.seek(0)
     Hdendrogram_base64 = base64.b64encode(dendrogram_img.getvalue()).decode()
 
+
+    # Generate a heatmap for the labels
+    plt.figure(figsize=(10, 6))
+    labels_heatmap = data.groupby(['label'])[features].mean()  # Assuming you want the average values for each label
+    sns.heatmap(labels_heatmap, annot=True, cmap='coolwarm', fmt=".2f")
+    plt.title('Labels Heatmap')
+    plt.xlabel('Features')
+    plt.ylabel('Crop Labels')
+    labels_heatmap_img = BytesIO()
+    plt.savefig(labels_heatmap_img, format='png')
+    labels_heatmap_img.seek(0)
+    labels_heatmap_base64 = base64.b64encode(labels_heatmap_img.getvalue()).decode()
+
+
     # Return all metrics and plots
-    return roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64, dendrogram_base64, Hdendrogram_base64
+    return roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64, dendrogram_base64, labels_heatmap_base64, Hdendrogram_base64
 
 # Function to plot ROC curves
 def plot_roc_curves(roc_curves, labels, auc_values_filtered):
@@ -159,7 +170,7 @@ def predict():
 @app.route('/metrics')
 def metrics():
     # Call the calculate_metrics function
-    roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64, dendrogram_base64, Hdendrogram_base64 = calculate_metrics()
+    roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64, dendrogram_base64, labels_heatmap_base64, Hdendrogram_base64 = calculate_metrics()
     labels = data['label'].unique()
      
     # Extracting the existing plt object from calculate_metrics
@@ -180,6 +191,7 @@ def metrics():
         correlation_plot_base64=correlation_plot_base64,
         tsne_plot_base64=tsne_plot_base64,
         dendrogram_base64=dendrogram_base64,
+        labels_heatmap_base64=labels_heatmap_base64,
         Hdendrogram_base64=Hdendrogram_base64
     )
 
