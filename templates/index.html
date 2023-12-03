@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crop Prediction</title>
+    <title>Crop Recommendation</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="styles.css">
     <style>
@@ -81,7 +81,7 @@
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Crop Prediction</a>
+        <a class="navbar-brand" href="#">Crop Recommendation</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -98,9 +98,9 @@
         </div>
     </nav>
     <div class="container mt-5">
-        <h1>Crop Prediction</h1>
+        <h1>Crop Recommendation</h1>
         <div class="description">
-            <p>Enter the environmental parameters below to predict the suitable crop for cultivation.</p>
+            <p>Enter the environmental parameters below to get a crop recommendation of a suitable crop to grow with the environmental conditions.</p>
         </div>
         <form method="post" action="/predict">
             <div class="form-group">
@@ -142,15 +142,15 @@
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="clustering" id="taxonomy" value="taxonomy">
                     <label class="form-check-label" for="taxonomy">
-                        Taxonomy (Order of the crop)
+                        Taxonomy (Crop Order)
                     </label>
                 </div>
             </div>
-            <button type="submit">Predict</button>
+            <button type="submit">Get Recommendation</button>
         </form>
         {% if prediction %}
         <div class="prediction-box mt-4">
-            <h3>Predicted Crop: {{ prediction }}</h3>
+            <h3>Recommended Crop: {{ prediction }}</h3>
         </div>
         {% endif %}
     </div>
