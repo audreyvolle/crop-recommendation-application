@@ -13,7 +13,7 @@ This will start the server, and you can access the application at http://localho
 
 2. Provide values for Nitrogen (N), Phosphorus (P), Potassium (K), Temperature (in Celsius), Humidity, pH, and Rainfall.
 
-3. Click the "Predict" button to obtain the recommended crops based on the given conditions.
+3. Click the "Get Recommendation" button to obtain the recommended crops based on the given conditions.
 The application will analyze the input data and display the most suitable crops, helping users make informed decisions about crop cultivation.
 
 Feel free to explore the application and discover optimal crop choices for your specific agricultural conditions!
@@ -22,4 +22,4 @@ Feel free to explore the application and discover optimal crop choices for your 
 Additionally, you can view metrics related to the model's performance by navigating to http://localhost:5001/metrics. The metrics include values such as Area Under the Curve (AUC), providing insights into the accuracy and effectiveness of the crop recommendation model. Exploring these metrics can offer a deeper understanding of how well the application is performing.
 
 ## R Solution
-To explore the R solution go to https://github.com/audreyvolle/CropRecommendation
+To explore the R solution, go to https://github.com/audreyvolle/CropRecommendation

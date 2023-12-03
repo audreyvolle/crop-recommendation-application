@@ -20,8 +20,8 @@ from scipy.spatial.distance import pdist
 app = Flask(__name__)
 Bootstrap(app)
 
-data = pd.read_csv("Crop_recommendation.csv")
-dataTaxonomy = pd.read_csv("Order.csv")
+data = pd.read_csv("datasets/Crop_recommendation.csv")
+dataTaxonomy = pd.read_csv("datasets/Order.csv")
 
 # Naive Bayes model for original dataset
 features = ['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
