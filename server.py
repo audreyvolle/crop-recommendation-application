@@ -268,10 +268,6 @@ def metrics():
         auc_values_taxonomy=auc_values_taxonomy
     )
 
-@app.route('/r')
-def r_solution():
-    return render_template('r.html')
-
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
     plot_in_main_thread(roc_curves, labels, auc_values_filtered)  
