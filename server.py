@@ -20,46 +20,40 @@ from scipy.spatial.distance import pdist
 app = Flask(__name__)
 Bootstrap(app)
 
-# Load the provided dataset
 data = pd.read_csv("Crop_recommendation.csv")
 dataTaxonomy = pd.read_csv("Order.csv")
 
-# Train a Naive Bayes model on the entire dataset
+# Naive Bayes model for original dataset
 features = ['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
 X = data[features]
 y = data['label']
 nb_model = GaussianNB()
 nb_model.fit(X, y)
 
-# Train a Naive Bayes model on the entire dataset 
+# Naive Bayes model for taxonomy dataset
 X = dataTaxonomy[features]
 y = dataTaxonomy['label']
 nb_model_taxonomy = GaussianNB()
 nb_model_taxonomy.fit(X, y)
 
-# Function to make predictions
 def predict_crop(user_input):
     user_data = pd.DataFrame([user_input], columns=features)
     prediction = nb_model.predict(user_data)
     return prediction[0]
 
-# Function to make predictions for Taxonomy clustering
 def predict_crop_taxonomy(user_input):
     user_data = pd.DataFrame([user_input], columns=features)
     prediction = nb_model_taxonomy.predict(user_data)
     return prediction[0]
 
-# Function to calculate metrics
 def calculate_metrics():
-    # Split the data set into training and testing sets
+    # ROC Curves
     train_data = data.sample(frac=0.8, random_state=123)
     test_data = data.drop(train_data.index)
 
-    # Train a Naive Bayes model on filtered data
     nb_model_filtered = GaussianNB()
     nb_model_filtered.fit(train_data[features], train_data['label'])
 
-    # Make predictions on the filtered test set
     predictions_filtered = nb_model_filtered.predict(test_data[features])
 
     roc_curves = []
@@ -71,7 +65,7 @@ def calculate_metrics():
         roc_curves.append((fpr, tpr))
         auc_values_filtered.append(auc(fpr, tpr))
 
-    # Generate a confusion matrix for the filtered data
+    # Correlation plot
     correlation_matrix = data[features].corr()
     plt.figure(figsize=(8, 8))
     sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
@@ -83,7 +77,7 @@ def calculate_metrics():
     correlation_plot_img.seek(0)
     correlation_plot_base64 = base64.b64encode(correlation_plot_img.getvalue()).decode()
 
-    # Generate t-SNE diagram
+    # t-SNE diagram
     tsne = TSNE(n_components=2, random_state=42)
     tsne_result = tsne.fit_transform(data[features])
     plt.figure(figsize=(8, 8))
@@ -94,10 +88,8 @@ def calculate_metrics():
     tsne_plot_img.seek(0)
     tsne_plot_base64 = base64.b64encode(tsne_plot_img.getvalue()).decode()
 
-    # Perform hierarchical clustering based on features
+    # Hierarchical clustering - Features
     dist_matrix = linkage(data[features].transpose(), method='ward', metric='euclidean')
-
-    # Plot the hierarchical clustering dendrogram
     plt.figure(figsize=(12, 8))
     dendrogram(dist_matrix, labels=data[features].columns, orientation='top')
     plt.title('Hierarchical Clustering Dendrogram')
@@ -107,14 +99,11 @@ def calculate_metrics():
     dendrogram_base64 = base64.b64encode(dendrogram_img.getvalue()).decode()
 
 
-    # Generate hierarchical clustering dendrogram for labels
+    # Hierarchical clustering - Labels
     samples_per_label = 5
-    # Create a DataFrame with a sample of data for each label
     sampled_data = pd.concat([data[data['label'] == label].sample(samples_per_label, random_state=42) for label in data['label'].unique()])
-    # Generate hierarchical clustering dendrogram
     distance_matrix_sampled = pdist(sampled_data[features])  # Pairwise distance between data points
     linkage_matrix_sampled = hierarchy.linkage(distance_matrix_sampled, method='complete')  # Hierarchical clustering linkage
-    # Plot the hierarchical clustering dendrogram
     dendrogram_img = BytesIO()
     plt.figure(figsize=(12, 6))
     hierarchy.dendrogram(linkage_matrix_sampled, labels=sampled_data['label'].tolist(), orientation='top', color_threshold=np.inf)
@@ -126,7 +115,7 @@ def calculate_metrics():
     Hdendrogram_base64 = base64.b64encode(dendrogram_img.getvalue()).decode()
 
 
-    # Generate a heatmap for the labels
+    # Heatmap
     plt.figure(figsize=(10, 6))
     labels_heatmap = data.groupby(['label'])[features].mean()  # Assuming you want the average values for each label
     sns.heatmap(labels_heatmap, annot=True, cmap='coolwarm', fmt=".2f")
@@ -143,16 +132,13 @@ def calculate_metrics():
     return roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64, dendrogram_base64, labels_heatmap_base64, Hdendrogram_base64
 
 def calculate_metrics_taxonomy():
-
-    # Split the data set into training and testing sets
+    # ROC Taxonomy
     train_data = dataTaxonomy.sample(frac=0.8, random_state=123)
     test_data = dataTaxonomy.drop(train_data.index)
 
-    # Train a Naive Bayes model on filtered data
     nb_model_filtered = GaussianNB()
     nb_model_filtered.fit(train_data[features], train_data['label'])
 
-    # Make predictions on the filtered test set
     predictions_filtered = nb_model_filtered.predict(test_data[features])
 
     roc_curves_taxonomy = []
@@ -166,7 +152,7 @@ def calculate_metrics_taxonomy():
 
     return roc_curves_taxonomy, auc_values_taxonomy
 
-# Function to plot ROC curves
+# Plot ROC curves
 def plot_roc_curves(roc_curves, labels, auc_values_filtered):
     plt.figure(figsize=(8, 8))
     for i in range(len(roc_curves)):
@@ -185,7 +171,7 @@ def plot_roc_curves(roc_curves, labels, auc_values_filtered):
 def plot_in_main_thread(roc_curves, labels, auc_values_filtered):
     multiprocessing.Process(target=plot_roc_curves, args=(roc_curves, labels, auc_values_filtered)).start()
 
-# Function to plot ROC curves for Taxonomy clustering
+# Plot ROC curves for Taxonomy clustering
 def plot_roc_curves_taxonomy(roc_curves, labels, auc_values_taxonomy):
     plt.figure(figsize=(8, 8))
     for i in range(len(roc_curves)):
@@ -204,7 +190,6 @@ def plot_roc_curves_taxonomy(roc_curves, labels, auc_values_taxonomy):
 def plot_in_main_thread_taxonomy(roc_curves, labels, auc_values_taxonomy):
     multiprocessing.Process(target=plot_roc_curves_taxonomy, args=(roc_curves, labels, auc_values_taxonomy)).start()
 
-# Flask Routes
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -231,20 +216,14 @@ def predict():
 
 @app.route('/metrics')
 def metrics():
-    # Call the calculate_metrics function for regular clustering
     roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64, dendrogram_base64, labels_heatmap_base64, Hdendrogram_base64 = calculate_metrics()
 
-    # Call the calculate_metrics_taxonomy function for taxonomy clustering
     roc_curves_taxonomy, auc_values_taxonomy = calculate_metrics_taxonomy()
 
     labels = data['label'].unique()
     tax_labels = dataTaxonomy['label'].unique()
      
-    # Extracting the existing plt object from calculate_metrics
     plt = plot_roc_curves(roc_curves, labels, auc_values_filtered)
-
-    # Extracting the existing plt object from calculate_metrics_taxonomy
-    #pltTax = plot_roc_curves_taxonomy(roc_curves_taxonomy, tax_labels, auc_values_taxonomy)
 
     img = BytesIO()
     plt.savefig(img, format='png')
