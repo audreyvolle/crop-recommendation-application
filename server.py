@@ -22,6 +22,7 @@ Bootstrap(app)
 
 # Load the provided dataset
 data = pd.read_csv("Crop_recommendation.csv")
+dataTaxonomy = pd.read_csv("Order.csv")
 
 # Train a Naive Bayes model on the entire dataset
 features = ['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
@@ -30,10 +31,22 @@ y = data['label']
 nb_model = GaussianNB()
 nb_model.fit(X, y)
 
+# Train a Naive Bayes model on the entire dataset 
+X = dataTaxonomy[features]
+y = dataTaxonomy['label']
+nb_model_taxonomy = GaussianNB()
+nb_model_taxonomy.fit(X, y)
+
 # Function to make predictions
 def predict_crop(user_input):
     user_data = pd.DataFrame([user_input], columns=features)
     prediction = nb_model.predict(user_data)
+    return prediction[0]
+
+# Function to make predictions for Taxonomy clustering
+def predict_crop_taxonomy(user_input):
+    user_data = pd.DataFrame([user_input], columns=features)
+    prediction = nb_model_taxonomy.predict(user_data)
     return prediction[0]
 
 # Function to calculate metrics
@@ -58,6 +71,7 @@ def calculate_metrics():
         roc_curves.append((fpr, tpr))
         auc_values_filtered.append(auc(fpr, tpr))
 
+    # Generate a confusion matrix for the filtered data
     correlation_matrix = data[features].corr()
     plt.figure(figsize=(8, 8))
     sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
@@ -128,6 +142,38 @@ def calculate_metrics():
     # Return all metrics and plots
     return roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64, dendrogram_base64, labels_heatmap_base64, Hdendrogram_base64
 
+def calculate_metrics_taxonomy():
+
+    # Split the data set into training and testing sets
+    train_data = data.sample(frac=0.8, random_state=123)
+    test_data = data.drop(train_data.index)
+
+    # Perform clustering based on taxonomy for test data
+    predicted_taxonomy = test_data.apply(predict_crop_taxonomy, axis=1)
+
+    # Create binary matrices for actual and predicted labels
+    actual_matrix = pd.get_dummies(test_data['label'])
+    # Extract the crop names from the list of dictionaries
+    predicted_crops = [entry["crop"] for entry in predicted_taxonomy]
+
+    # Create a Series from the list of crop names
+    predicted_series = pd.Series(predicted_crops)
+
+    # Use pd.get_dummies on the Series
+    predicted_matrix = pd.get_dummies(predicted_series)
+
+    # Calculate ROC curves and AUC values for each crop
+    roc_curves_taxonomy = []
+    auc_values_taxonomy = []
+    for crop in data['label'].unique():
+        actual_class_taxonomy = actual_matrix[crop]
+        predicted_class_taxonomy = predicted_matrix[crop]
+        fpr, tpr, _ = roc_curve(actual_class_taxonomy, predicted_class_taxonomy)
+        roc_curves_taxonomy.append((fpr, tpr))
+        auc_values_taxonomy.append(auc(fpr, tpr))
+
+    return roc_curves_taxonomy, auc_values_taxonomy
+
 # Function to plot ROC curves
 def plot_roc_curves(roc_curves, labels, auc_values_filtered):
     plt.figure(figsize=(8, 8))
@@ -147,6 +193,25 @@ def plot_roc_curves(roc_curves, labels, auc_values_filtered):
 def plot_in_main_thread(roc_curves, labels, auc_values_filtered):
     multiprocessing.Process(target=plot_roc_curves, args=(roc_curves, labels, auc_values_filtered)).start()
 
+# Function to plot ROC curves for Taxonomy clustering
+def plot_roc_curves_taxonomy(roc_curves, labels, auc_values_taxonomy):
+    plt.figure(figsize=(8, 8))
+    for i in range(len(roc_curves)):
+        fpr, tpr = roc_curves[i]
+        plt.plot(fpr, tpr, label=f'{labels[i]} (AUC = {auc_values_taxonomy[i]:.2f})')
+
+    plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label='Random')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curves (Taxonomy Clustering)')
+    plt.legend(loc='lower right')
+    plt.grid(True)
+    plt.ioff()
+    return plt
+
+def plot_in_main_thread_taxonomy(roc_curves, labels, auc_values_taxonomy):
+    multiprocessing.Process(target=plot_roc_curves_taxonomy, args=(roc_curves, labels, auc_values_taxonomy)).start()
+
 # Flask Routes
 @app.route('/')
 def index():
@@ -162,15 +227,24 @@ def predict():
         'humidity': float(request.form['humidity']),
         'ph': float(request.form['ph']),
         'rainfall': float(request.form['rainfall']),
+        'clustering': request.form['clustering']
     }
 
-    prediction = predict_crop(user_input)
+    if user_input['clustering'] == 'taxonomy':
+        prediction = predict_crop_taxonomy(user_input)
+    else:
+        prediction = predict_crop(user_input)
+
     return render_template('index.html', prediction=prediction)
 
 @app.route('/metrics')
 def metrics():
-    # Call the calculate_metrics function
+    # Call the calculate_metrics function for regular clustering
     roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64, dendrogram_base64, labels_heatmap_base64, Hdendrogram_base64 = calculate_metrics()
+
+    # Call the calculate_metrics_taxonomy function for taxonomy clustering
+    # roc_curves_taxonomy, auc_values_taxonomy = calculate_metrics_taxonomy()
+
     labels = data['label'].unique()
      
     # Extracting the existing plt object from calculate_metrics
@@ -193,6 +267,8 @@ def metrics():
         dendrogram_base64=dendrogram_base64,
         labels_heatmap_base64=labels_heatmap_base64,
         Hdendrogram_base64=Hdendrogram_base64
+        #roc_curves_taxonomy=roc_curves_taxonomy,
+        #auc_values_taxonomy=auc_values_taxonomy
     )
 
 @app.route('/r')
@@ -201,4 +277,4 @@ def r_solution():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
-    plot_in_main_thread(roc_curves, labels, auc_values_filtered)
+    plot_in_main_thread(roc_curves, labels, auc_values_filtered)  

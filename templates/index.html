@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -37,6 +38,14 @@
             font-weight: bold;
         }
 
+        .form-check {
+            margin-bottom: 10px;
+        }
+
+        .form-check-input {
+            margin-right: 5px;
+        }
+
         button {
             background-color: #007bff;
             color: #ffffff;
@@ -61,12 +70,20 @@
             margin-bottom: 30px;
             color: #6c757d;
         }
+
+        .prediction-box {
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
     </style>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="#">Crop Prediction</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -117,12 +134,29 @@
                 <label for="rainfall">Rainfall:</label>
                 <input type="text" class="form-control" id="rainfall" name="rainfall" required>
             </div>
+            <div class="form-group">
+                <label for="clustering">Recommendation Type:</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="clustering" id="none" value="none" checked>
+                    <label class="form-check-label" for="none">
+                        Crop
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="clustering" id="taxonomy" value="taxonomy">
+                    <label class="form-check-label" for="taxonomy">
+                        Taxonomy (Order of the crop)
+                    </label>
+                </div>
+            </div>
             <button type="submit">Predict</button>
         </form>
         {% if prediction %}
-            <h3 class="mt-4">Predicted Crop: {{ prediction }}</h3>
+        <div class="prediction-box mt-4">
+            <h3>Predicted Crop: {{ prediction }}</h3>
+        </div>
         {% endif %}
     </div>
 </body>
-</html>
 
+</html>

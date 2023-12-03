@@ -72,6 +72,20 @@
                 </ul>
             </div>
         </div>
+        <!--<div class="row">
+            <div class="col-md-6">
+                <h4>ROC Curves Taxonomy</h4>
+                <img src="data:image/png;base64,{{ plot_base64_taxonomy }}" alt="ROC Curves Taxonomy" class="img-fluid">
+            </div>
+            <div class="col-md-6">
+                <h4>AUC Values Taxonomy</h4>
+                <ul>
+                    {% for i in range(auc_values_taxonomy|length) %}
+                    <li>{{ labels[i] }}: {{ auc_values_taxonomy[i]|round(2) }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>-->
     </div>
 </body>
 
