@@ -3,8 +3,9 @@
 The Crop Recommendation Application is a tool that helps users determine the most suitable crops to grow based on specific environmental conditions. By providing information such as Nitrogen (N), Phosphorus (P), Potassium (K), Temperature, Humidity, pH, and Rainfall for a particular area, the application predicts the optimal crops for cultivation.
 
 ## How to Run
+````
 python server.py
-
+````
 This will start the server, and you can access the application at http://localhost:5001/.
 
 ## How to Use
