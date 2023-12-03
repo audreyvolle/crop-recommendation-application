@@ -94,7 +94,7 @@ def calculate_metrics():
     tsne_plot_img.seek(0)
     tsne_plot_base64 = base64.b64encode(tsne_plot_img.getvalue()).decode()
 
-     # Perform hierarchical clustering based on features
+    # Perform hierarchical clustering based on features
     dist_matrix = linkage(data[features].transpose(), method='ward', metric='euclidean')
 
     # Plot the hierarchical clustering dendrogram
@@ -145,30 +145,22 @@ def calculate_metrics():
 def calculate_metrics_taxonomy():
 
     # Split the data set into training and testing sets
-    train_data = data.sample(frac=0.8, random_state=123)
-    test_data = data.drop(train_data.index)
+    train_data = dataTaxonomy.sample(frac=0.8, random_state=123)
+    test_data = dataTaxonomy.drop(train_data.index)
 
-    # Perform clustering based on taxonomy for test data
-    predicted_taxonomy = test_data.apply(predict_crop_taxonomy, axis=1)
+    # Train a Naive Bayes model on filtered data
+    nb_model_filtered = GaussianNB()
+    nb_model_filtered.fit(train_data[features], train_data['label'])
 
-    # Create binary matrices for actual and predicted labels
-    actual_matrix = pd.get_dummies(test_data['label'])
-    # Extract the crop names from the list of dictionaries
-    predicted_crops = [entry["crop"] for entry in predicted_taxonomy]
+    # Make predictions on the filtered test set
+    predictions_filtered = nb_model_filtered.predict(test_data[features])
 
-    # Create a Series from the list of crop names
-    predicted_series = pd.Series(predicted_crops)
-
-    # Use pd.get_dummies on the Series
-    predicted_matrix = pd.get_dummies(predicted_series)
-
-    # Calculate ROC curves and AUC values for each crop
     roc_curves_taxonomy = []
     auc_values_taxonomy = []
-    for crop in data['label'].unique():
-        actual_class_taxonomy = actual_matrix[crop]
-        predicted_class_taxonomy = predicted_matrix[crop]
-        fpr, tpr, _ = roc_curve(actual_class_taxonomy, predicted_class_taxonomy)
+    for crop in dataTaxonomy['label'].unique():
+        actual_class = (test_data['label'] == crop).astype(int)
+        predicted_class = (predictions_filtered == crop).astype(int)
+        fpr, tpr, _ = roc_curve(actual_class, predicted_class)
         roc_curves_taxonomy.append((fpr, tpr))
         auc_values_taxonomy.append(auc(fpr, tpr))
 
@@ -243,12 +235,16 @@ def metrics():
     roc_curves, auc_values_filtered, correlation_plot_base64, tsne_plot_base64, dendrogram_base64, labels_heatmap_base64, Hdendrogram_base64 = calculate_metrics()
 
     # Call the calculate_metrics_taxonomy function for taxonomy clustering
-    # roc_curves_taxonomy, auc_values_taxonomy = calculate_metrics_taxonomy()
+    roc_curves_taxonomy, auc_values_taxonomy = calculate_metrics_taxonomy()
 
     labels = data['label'].unique()
+    tax_labels = dataTaxonomy['label'].unique()
      
     # Extracting the existing plt object from calculate_metrics
     plt = plot_roc_curves(roc_curves, labels, auc_values_filtered)
+
+    # Extracting the existing plt object from calculate_metrics_taxonomy
+    #pltTax = plot_roc_curves_taxonomy(roc_curves_taxonomy, tax_labels, auc_values_taxonomy)
 
     img = BytesIO()
     plt.savefig(img, format='png')
@@ -261,14 +257,15 @@ def metrics():
         roc_curves=roc_curves,
         auc_values_filtered=auc_values_filtered,
         labels=labels,
+        tax_labels=tax_labels,
         plot_base64=plot_base64,
         correlation_plot_base64=correlation_plot_base64,
         tsne_plot_base64=tsne_plot_base64,
         dendrogram_base64=dendrogram_base64,
         labels_heatmap_base64=labels_heatmap_base64,
-        Hdendrogram_base64=Hdendrogram_base64
-        #roc_curves_taxonomy=roc_curves_taxonomy,
-        #auc_values_taxonomy=auc_values_taxonomy
+        Hdendrogram_base64=Hdendrogram_base64,
+        roc_curves_taxonomy=roc_curves_taxonomy,
+        auc_values_taxonomy=auc_values_taxonomy
     )
 
 @app.route('/r')
@@ -278,3 +275,4 @@ def r_solution():
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
     plot_in_main_thread(roc_curves, labels, auc_values_filtered)  
+    plot_in_main_thread_taxonomy(roc_curves_taxonomy, tax_labels, auc_values_taxonomy)
